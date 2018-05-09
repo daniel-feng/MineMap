@@ -14,6 +14,9 @@ public class MineMap {
     private int height;
 
     Set<Position> plantedMines = new HashSet<Position>();
+    Set<Position> openedMines = new HashSet<Position>();
+    private boolean finished = false;
+    private boolean isWin = true;
 
     public MineMap(int height, int width) {
         this.width = width;
@@ -106,5 +109,57 @@ public class MineMap {
             }
         }
         return mineMapArray;
+    }
+
+    public void sweep(Position position) {
+        if (plantedMines.contains(position)){
+            finished = true;
+            isWin = false;
+        }else{
+            openedGrid(position);
+            if (width * height == plantedMines.size() + openedMines.size())
+                finished = true;
+        }
+    }
+
+    private void openedGrid(Position position) {
+        if (!openedMines.contains(position)){
+            openedMines.add(position);
+            Set<Position> srroundPositions = getSrroundPosition(position);
+            for (Position pos: srroundPositions){
+                if (isValid(pos) && getNeighborCount(pos) == 0)
+                    openedGrid(pos);
+            }
+        }
+    }
+
+    private boolean isValid(Position pos) {
+        return (pos.getWidth() >= 0 && pos.getWidth() < width) && (pos.getHeight() >= 0 && pos.getHeight() < height);
+
+    }
+
+    private Set<Position> getSrroundPosition(Position position) {
+        Set srroundPositions = new HashSet<Position>();
+        srroundPositions.add(new Position(position.getHeight() - 1, position.getWidth()));
+        srroundPositions.add(new Position(position.getHeight() - 1, position.getWidth() - 1));
+        srroundPositions.add(new Position(position.getHeight() - 1, position.getWidth() + 1));
+        srroundPositions.add(new Position(position.getHeight(), position.getWidth() - 1));
+        srroundPositions.add(new Position(position.getHeight(), position.getWidth() + 1));
+        srroundPositions.add(new Position(position.getHeight() + 1, position.getWidth() - 1));
+        srroundPositions.add(new Position(position.getHeight() + 1, position.getWidth()));
+        srroundPositions.add(new Position(position.getHeight() + 1, position.getWidth() + 1));
+        return srroundPositions;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public boolean isWin() {
+        return isWin;
+    }
+
+    public boolean isOpened(Position position) {
+        return openedMines.contains(position);
     }
 }
